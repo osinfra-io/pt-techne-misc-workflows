@@ -24,7 +24,7 @@ jobs:
       # https://github.com/marketplace/actions/create-github-app-token
 
       - name: Create GitHub App Token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf  # v2.2.1
         id: app-token
         with:
           app-id: 1080775
@@ -34,7 +34,7 @@ jobs:
       # https://github.com/marketplace/actions/add-to-github-projects
 
       - name: Add to GitHub project
-        uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e
+        uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e  # v1.0.2
         with:
           project-url: https://github.com/orgs/osinfra-io/projects/${{ inputs.project_id }}
           github-token: ${{ steps.app-token.outputs.token }}
