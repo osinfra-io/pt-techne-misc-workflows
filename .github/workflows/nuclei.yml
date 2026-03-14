@@ -6,9 +6,6 @@ on:
       urls_file:
         required: true
         type: string
-      cache_key:
-        required: true
-        type: string
 
 jobs:
   nuclei-scan:
@@ -21,27 +18,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
 
-      # GitHub Cache
-      # https://github.com/marketplace/actions/cache
-
-      - name: Cache Nuclei templates
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306  # v5.0.3
-        with:
-          path: ~/nuclei-templates
-          key: ${{ inputs.cache_key }}
-          restore-keys: |
-            ${{ inputs.cache_key }}
-
       # Nuclei
-      # https://github.com/marketplace/actions/nuclei-vulnerability-scan
+      # https://github.com/projectdiscovery/nuclei-actio
 
       - name: Nuclei vulnerability scan
         id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c  # v3.1.0
+        uses: projectdiscovery/nuclei-action@7125d52fb64241bfd755b06dadcd3075192da010  # v3
         with:
-          flags: -severity low,medium,high,critical
-          urls: ${{ inputs.urls_file }}
-          user-agent: "User-Agent:'Nuclei - Vulnerability Scan (osinfra.io)'"
+          args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: Nuclei - Vulnerability Scan (osinfra.io)' -o nuclei.log -sarif-export nuclei.sarif"
 
       # GitHub Upload Artifact
       # https://github.com/actions/upload-artifact
@@ -59,7 +43,7 @@ jobs:
 
       - name: GitHub security dashboard alerts update
         uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98  # v4.32.6
-        if: success() && steps.nuclei_scan.outputs.sarif_exists == 'true'
+        if: success() && hashFiles('nuclei.sarif') != ''
         with:
           sarif_file: nuclei.sarif
           category: Nuclei
