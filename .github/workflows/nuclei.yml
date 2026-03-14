@@ -9,7 +9,7 @@ on:
 
 jobs:
   nuclei-scan:
-    name: Scan
+    name: Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
       # GitHub Checkout
@@ -21,11 +21,11 @@ jobs:
       # Nuclei
       # https://github.com/projectdiscovery/nuclei-action
 
-      - name: Nuclei vulnerability scan
+      - name: Nuclei run 
         id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@7125d52fb64241bfd755b06dadcd3075192da010  # v3
+        uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c  # v3.1.0
         with:
-          args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: Nuclei - Vulnerability Scan (osinfra.io)' -o nuclei.log -sarif-export nuclei.sarif"
+          args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: osinfra.io - Vulnerability Scan' -sarif-export nuclei.sarif"
 
       # GitHub Upload Artifact
       # https://github.com/actions/upload-artifact
