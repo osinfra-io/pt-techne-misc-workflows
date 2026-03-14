@@ -1,6 +1,6 @@
 # <img align="left" width="45" height="45" src="https://user-images.githubusercontent.com/1610100/201473670-e0e6bdeb-742f-4be1-a47a-3506309620a3.png"> Miscellaneous Called Workflows
 
-[![Dependabot](https://img.shields.io/github/actions/workflow/status/osinfra-io/pt-techne-misc-workflows/dependabot.yml?style=for-the-badge&logo=github&color=2088FF&label=Dependabot)](https://github.com/osinfra-io/pt-techne-misc-workflows/actions/workflows/dependabot.yml) [![Datadog Security Enabled](https://img.shields.io/badge/Datadog%20Security-Enabled-632CA6?style=for-the-badge&logo=datadog)](https://app.datadoghq.com/security/code-security/repositories?repository_id=pt-techne-misc-workflows)
+[![Dependabot](https://img.shields.io/github/actions/workflow/status/osinfra-io/pt-techne-misc-workflows/dependabot.yml?style=for-the-badge&logo=github&color=2088FF&label=Dependabot)](https://github.com/osinfra-io/pt-techne-misc-workflows/actions/workflows/dependabot.yml)
 
 Reusing workflows avoids duplication. This makes workflows easier to maintain and allows you to create new workflows
 more quickly by building on the work of others, just as you do with actions.
