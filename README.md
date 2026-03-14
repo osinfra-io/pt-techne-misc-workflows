@@ -19,3 +19,4 @@ Rather than copying and pasting from one workflow to another, you can make workf
 - [build-and-push](.github/workflows/build-and-push.yml)
 - [dependabot.yml](.github/workflows/dependabot.yml)
 - [nuclei.yml](.github/workflows/nuclei.yml)
+- [release.yml](.github/workflows/release.yml)
