@@ -21,7 +21,7 @@ jobs:
       # Nuclei
       # https://github.com/projectdiscovery/nuclei-action
 
-      - name: Nuclei run 
+      - name: Nuclei run
         id: nuclei_scan
         uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c  # v3.1.0
         with:
@@ -35,7 +35,6 @@ jobs:
         with:
           name: nuclei-artifacts
           path: |
-            nuclei.log
             nuclei.sarif
 
       # GitHub CodeQL upload SARIF
