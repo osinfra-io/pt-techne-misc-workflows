@@ -7,7 +7,6 @@ on:
         description: The GitHub token
         required: true
 
-permissions: {}
 
 jobs:
   release:

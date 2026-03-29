@@ -48,7 +48,6 @@ on:
         required: true
         type: string
 
-permissions: {}
 
 jobs:
   build-and-push:
