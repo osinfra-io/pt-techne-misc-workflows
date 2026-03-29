@@ -4,8 +4,10 @@ on:
   workflow_call:
     inputs:
       urls_file:
+        description: "Path to the file containing URLs to scan with Nuclei"
         required: true
         type: string
+
 
 jobs:
   nuclei-scan:

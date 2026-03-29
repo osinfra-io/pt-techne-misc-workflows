@@ -4,39 +4,50 @@ on:
   workflow_call:
     inputs:
       build_args:
+        description: "Build arguments to pass to docker build (newline-separated KEY=VALUE pairs)"
         required: false
         type: string
       cache_from:
+        description: "Cache sources for Docker layer caching"
         required: true
         type: string
       cache_to:
+        description: "Cache destinations for Docker layer caching"
         required: false
         type: string
         default: "type=inline"
       context:
+        description: "Docker build context path"
         required: false
         type: string
         default: "."
       file:
+        description: "Path to the Dockerfile"
         required: false
         type: string
         default: ""
       push:
+        description: "Whether to push the image after building"
         required: false
         type: boolean
         default: true
       registry:
+        description: "Container registry hostname (e.g. us-docker.pkg.dev)"
         required: true
         type: string
       service_account:
+        description: "GCP service account for Artifact Registry authentication"
         required: true
         type: string
       tags:
+        description: "Image tags to apply (newline-separated)"
         required: true
         type: string
       workload_identity_provider:
+        description: "GCP Workload Identity Provider for OIDC authentication"
         required: true
         type: string
+
 
 jobs:
   build-and-push:
@@ -78,7 +89,6 @@ jobs:
           username: oauth2accesstoken
           password: ${{ steps.create_credentials.outputs.access_token }}
 
-
       # Build and Push Docker to Google Artifact Registry
       # https://github.com/marketplace/actions/build-and-push-docker-images
 
@@ -89,6 +99,6 @@ jobs:
           cache-from: ${{ inputs.cache_from }}
           cache-to: ${{ inputs.cache_to }}
           context: ${{ inputs.context }}
-          file: ${{ inputs.file}}
+          file: ${{ inputs.file }}
           build-args: ${{ inputs.build_args }}
           push: ${{ inputs.push }}
