@@ -25,7 +25,7 @@ jobs:
 
       - name: Nuclei run
         id: nuclei_scan
-        uses: projectdiscovery/nuclei-action@32a91c0da7be14c07b0ade6c14fa0f6e78d97c9c  # v3.1.0
+        uses: projectdiscovery/nuclei-action@cc153d0541e1adf8a42bbe31c0a4fb2376147538  # v3.1.1
         with:
           args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: osinfra.io - Vulnerability Scan' -sarif-export nuclei.sarif"
 
