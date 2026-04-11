@@ -8,7 +8,8 @@ on:
     types:
       - opened
 
-permissions: {}
+permissions:
+  issues: write
 
 jobs:
   add-to-osinfra-project:
