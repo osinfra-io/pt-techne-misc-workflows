@@ -20,8 +20,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release view $TAG --repo "${{ github.repository }}" > /dev/null 2>&1 && exit 0
-          gh release create $TAG \
+          if gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1; then
+            exit 0
+          fi
+          gh release create "$TAG" \
             --repo "${{ github.repository }}" \
             --title "$TAG" \
-            --generate-notes
+            --generate-notes || \
+          gh release view "$TAG" --repo "${{ github.repository }}" > /dev/null 2>&1
