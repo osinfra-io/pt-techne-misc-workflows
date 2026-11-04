@@ -3,6 +3,26 @@ name: Nuclei Vulnerability Scan Called Workflow
 on:
   workflow_call:
     inputs:
+      bulk_size:
+        default: 1
+        description: "Maximum number of targets scanned concurrently per template"
+        required: false
+        type: number
+      concurrency:
+        default: 1
+        description: "Maximum number of templates executed concurrently"
+        required: false
+        type: number
+      probe_concurrency:
+        default: 1
+        description: "Maximum number of concurrent HTTP probes"
+        required: false
+        type: number
+      rate_limit:
+        default: 5
+        description: "Maximum scan requests per second; callers must account for shared WAF traffic"
+        required: false
+        type: number
       urls_file:
         description: "Path to the file containing URLs to scan with Nuclei"
         required: true
@@ -35,11 +55,22 @@ jobs:
         id: nuclei_scan
         shell: bash
         env:
+          BULK_SIZE: ${{ inputs.bulk_size }}
+          CONCURRENCY: ${{ inputs.concurrency }}
+          PROBE_CONCURRENCY: ${{ inputs.probe_concurrency }}
+          RATE_LIMIT: ${{ inputs.rate_limit }}
           URLS_FILE: ${{ inputs.urls_file }}
         run: |
           set -o pipefail
+          for value in "$RATE_LIMIT" "$CONCURRENCY" "$BULK_SIZE" "$PROBE_CONCURRENCY"; do
+            if [[ ! "$value" =~ ^[1-9][0-9]*$ ]]; then
+              echo "::error::rate_limit, concurrency, bulk_size, and probe_concurrency must be positive integers"
+              exit 1
+            fi
+          done
           nuclei -list "$URLS_FILE" -severity low,medium,high,critical \
-            -rate-limit 5 -concurrency 1 -bulk-size 1 -probe-concurrency 1 \
+            -rate-limit "$RATE_LIMIT" -concurrency "$CONCURRENCY" \
+            -bulk-size "$BULK_SIZE" -probe-concurrency "$PROBE_CONCURRENCY" \
             -H 'User-Agent: osinfra.io - Vulnerability Scan' \
             -jsonl-export nuclei.jsonl -sarif-export nuclei.sarif \
             2>&1 | tee "$RUNNER_TEMP/nuclei-output.txt"
