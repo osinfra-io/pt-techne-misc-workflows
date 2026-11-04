@@ -3,9 +3,39 @@ name: Nuclei Vulnerability Scan Called Workflow
 on:
   workflow_call:
     inputs:
+      bulk_size:
+        default: 1
+        description: "Maximum number of targets scanned concurrently per template"
+        required: false
+        type: number
+      concurrency:
+        default: 1
+        description: "Maximum number of templates executed concurrently"
+        required: false
+        type: number
+      probe_concurrency:
+        default: 1
+        description: "Maximum number of concurrent HTTP probes"
+        required: false
+        type: number
+      rate_limit:
+        default: 5
+        description: "Maximum scan requests per second; callers must account for shared WAF traffic"
+        required: false
+        type: number
+      severity:
+        default: "info,low,medium,high,critical,unknown"
+        description: "Comma-separated severities: info, low, medium, high, critical, or unknown"
+        required: false
+        type: string
       urls_file:
         description: "Path to the file containing URLs to scan with Nuclei"
         required: true
+        type: string
+      user_agent:
+        default: "osinfra.io - Vulnerability Scan"
+        description: "User-Agent header identifying scan requests"
+        required: false
         type: string
 
 permissions:
@@ -35,11 +65,33 @@ jobs:
         id: nuclei_scan
         shell: bash
         env:
+          BULK_SIZE: ${{ inputs.bulk_size }}
+          CONCURRENCY: ${{ inputs.concurrency }}
+          PROBE_CONCURRENCY: ${{ inputs.probe_concurrency }}
+          RATE_LIMIT: ${{ inputs.rate_limit }}
+          SEVERITY: ${{ inputs.severity }}
           URLS_FILE: ${{ inputs.urls_file }}
+          USER_AGENT: ${{ inputs.user_agent }}
         run: |
           set -o pipefail
-          nuclei -list "$URLS_FILE" -severity low,medium,high,critical \
-            -H 'User-Agent: osinfra.io - Vulnerability Scan' \
+          for value in "$RATE_LIMIT" "$CONCURRENCY" "$BULK_SIZE" "$PROBE_CONCURRENCY"; do
+            if [[ ! "$value" =~ ^[1-9][0-9]*$ ]]; then
+              echo "::error::rate_limit, concurrency, bulk_size, and probe_concurrency must be positive integers"
+              exit 1
+            fi
+          done
+          if [[ ! "$SEVERITY" =~ ^(info|low|medium|high|critical|unknown)(,(info|low|medium|high|critical|unknown))*$ ]]; then
+            echo "::error::severity must be a comma-separated list of supported Nuclei severities"
+            exit 1
+          fi
+          if [[ -z "$USER_AGENT" || "$USER_AGENT" == *$'\r'* || "$USER_AGENT" == *$'\n'* ]]; then
+            echo "::error::user_agent must be nonempty and contain no line breaks"
+            exit 1
+          fi
+          nuclei -list "$URLS_FILE" -severity "$SEVERITY" \
+            -rate-limit "$RATE_LIMIT" -concurrency "$CONCURRENCY" \
+            -bulk-size "$BULK_SIZE" -probe-concurrency "$PROBE_CONCURRENCY" \
+            -H "User-Agent: $USER_AGENT" \
             -jsonl-export nuclei.jsonl -sarif-export nuclei.sarif \
             2>&1 | tee "$RUNNER_TEMP/nuclei-output.txt"
 
@@ -80,7 +132,7 @@ jobs:
               : [];
             const findings = [];
             let reportError;
-            const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+            const counts = { critical: 0, high: 0, medium: 0, low: 0, info: 0, unknown: 0 };
             try {
               const records = fs.existsSync('nuclei.jsonl')
                 ? fs.readFileSync('nuclei.jsonl', 'utf8').split(/\r?\n/).filter((line) => line.trim())
@@ -110,8 +162,8 @@ jobs:
             if (reportError) {
               lines.push(`<pre>${esc(reportError)}</pre>`, '', 'Counts below include only successfully parsed findings.', '');
             }
-            lines.push('| Critical | High | Medium | Low |', '|---|---|---|---|',
-              `| ${counts.critical} | ${counts.high} | ${counts.medium} | ${counts.low} |`, '');
+            lines.push('| Critical | High | Medium | Low | Info | Unknown |', '|---|---|---|---|---|---|',
+              `| ${counts.critical} | ${counts.high} | ${counts.medium} | ${counts.low} | ${counts.info} | ${counts.unknown} |`, '');
             lines.push(`<details><summary>Targets (${targets.length})</summary>`, '', `<pre>${esc(targets.join('\n'))}</pre>`, '', '</details>', '');
             if (findings.length) {
               lines.push('<details><summary>Findings</summary>', '', '<table>',
