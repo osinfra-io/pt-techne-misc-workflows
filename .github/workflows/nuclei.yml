@@ -30,7 +30,7 @@ jobs:
         id: nuclei_scan
         uses: projectdiscovery/nuclei-action@cc153d0541e1adf8a42bbe31c0a4fb2376147538  # v3.1.1
         with:
-          args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: osinfra.io - Vulnerability Scan' -sarif-export nuclei.sarif"
+          args: "-list ${{ inputs.urls_file }} -severity low,medium,high,critical -H 'User-Agent: osinfra.io - Vulnerability Scan' -jsonl-export nuclei.jsonl -sarif-export nuclei.sarif"
 
       # GitHub Upload Artifact
       # https://github.com/actions/upload-artifact
@@ -41,6 +41,7 @@ jobs:
         with:
           name: nuclei-artifacts
           path: |
+            nuclei.jsonl
             nuclei.sarif
 
       # GitHub CodeQL upload SARIF
@@ -52,3 +53,59 @@ jobs:
         with:
           sarif_file: nuclei.sarif
           category: ${{ github.workflow }}
+
+      - name: Nuclei summary
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          SCAN_OUTCOME: ${{ steps.nuclei_scan.outcome }}
+          SCAN_STDOUT: ${{ steps.nuclei_scan.outputs.stdout }}
+          SCAN_STDERR: ${{ steps.nuclei_scan.outputs.stderr }}
+          URLS_FILE: ${{ inputs.urls_file }}
+        with:
+          script: |
+            const fs = require('fs');
+            const esc = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const targets = fs.existsSync(process.env.URLS_FILE)
+              ? fs.readFileSync(process.env.URLS_FILE, 'utf8').split(/\r?\n/).map((line) => line.trim()).filter((line) => line && !line.startsWith('#'))
+              : [];
+            const findings = fs.existsSync('nuclei.jsonl')
+              ? fs.readFileSync('nuclei.jsonl', 'utf8').split(/\r?\n/).filter((line) => line.trim()).map((line) => JSON.parse(line))
+              : [];
+            const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+            for (const finding of findings) {
+              const severity = finding.info.severity;
+              if (!(severity in counts)) {
+                throw new Error(`Unexpected Nuclei severity: ${severity}`);
+              }
+              counts[severity]++;
+            }
+            const lines = ['## Nuclei vulnerability scan', ''];
+            const outcome = process.env.SCAN_OUTCOME;
+            if (outcome === 'success') {
+              lines.push(findings.length ? `**Scan complete: ${findings.length} findings reported.**` : '**Scan complete: no findings reported.**', '');
+            } else {
+              lines.push(`**Scan ${esc(outcome || 'not run')}. Results may be incomplete; see the job logs.**`, '');
+            }
+            lines.push('| Critical | High | Medium | Low |', '|---|---|---|---|',
+              `| ${counts.critical} | ${counts.high} | ${counts.medium} | ${counts.low} |`, '');
+            lines.push(`<details><summary>Targets (${targets.length})</summary>`, '', `<pre>${esc(targets.join('\n'))}</pre>`, '', '</details>', '');
+            if (findings.length) {
+              lines.push('<details><summary>Findings</summary>', '', '<table>',
+                '<tr><th>Severity</th><th>Template</th><th>Target</th></tr>');
+              for (const finding of findings.slice(0, 100)) {
+                lines.push(`<tr><td>${esc(finding.info.severity)}</td><td>${esc(finding['template-id'])}</td><td>${esc(finding['matched-at'] || finding.host)}</td></tr>`);
+              }
+              lines.push('</table>', '', '</details>', '');
+              if (findings.length > 100) {
+                lines.push('Showing the first 100 findings. See the SARIF artifact for the full results.', '');
+              }
+            }
+            const output = [process.env.SCAN_STDOUT, process.env.SCAN_STDERR].filter(Boolean).join('\n').replace(/\x1b\[[0-9;]*m/g, '');
+            if (output) {
+              lines.push('<details><summary>Scan output</summary>', '', `<pre>${esc(output.slice(0, 50000))}</pre>`, '', '</details>', '');
+              if (output.length > 50000) {
+                lines.push('Output truncated; see the job logs for the full output.', '');
+              }
+            }
+            await core.summary.addRaw(lines.join('\n')).write();
