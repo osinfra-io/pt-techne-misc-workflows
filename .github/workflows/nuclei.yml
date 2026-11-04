@@ -80,7 +80,8 @@ jobs:
               }
               counts[severity]++;
             }
-            const lines = ['## Nuclei vulnerability scan', ''];
+            const logo = '<img src="https://raw.githubusercontent.com/projectdiscovery/nuclei/main/static/nuclei-logo.png" alt="Nuclei" height="24">';
+            const lines = [logo, '', '## Nuclei vulnerability scan', ''];
             const outcome = process.env.SCAN_OUTCOME;
             if (outcome === 'success') {
               lines.push(findings.length ? `**Scan complete: ${findings.length} findings reported.**` : '**Scan complete: no findings reported.**', '');
