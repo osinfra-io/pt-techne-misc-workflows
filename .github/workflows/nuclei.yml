@@ -50,4 +50,4 @@ jobs:
         if: success() && hashFiles('nuclei.sarif') != ''
         with:
           sarif_file: nuclei.sarif
-          category: Nuclei
+          category: ${{ github.workflow }}

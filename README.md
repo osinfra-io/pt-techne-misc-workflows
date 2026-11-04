@@ -15,3 +15,5 @@ Reusable GitHub Actions workflows for common platform repository automation. Con
 | [`release.yml`](.github/workflows/release.yml) | Publish repository releases from version tags |
 
 Files prefixed with `local-` are maintenance workflows for this repository, not reusable consumer interfaces.
+
+The Nuclei workflow uses the caller's workflow name as its SARIF category. Give each environment's caller a distinct, stable workflow name so uploads for different scan targets do not replace one another's findings.
