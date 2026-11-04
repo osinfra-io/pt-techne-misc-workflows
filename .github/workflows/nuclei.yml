@@ -24,7 +24,7 @@ on:
         required: false
         type: number
       severity:
-        default: "low,medium,high,critical"
+        default: "info,low,medium,high,critical,unknown"
         description: "Comma-separated severities: info, low, medium, high, critical, or unknown"
         required: false
         type: string
