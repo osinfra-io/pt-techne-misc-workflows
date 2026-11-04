@@ -80,7 +80,7 @@ jobs:
               }
               counts[severity]++;
             }
-            const logo = '<img src="https://raw.githubusercontent.com/projectdiscovery/nuclei/main/static/nuclei-logo.png" alt="Nuclei" height="24">';
+            const logo = '<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/projectdiscovery/docs/main/logo/ProjectDiscovery-Mark-OnDark.svg"><img src="https://raw.githubusercontent.com/projectdiscovery/docs/main/logo/ProjectDiscovery-Mark-OnLight.svg" alt="ProjectDiscovery" height="24"></picture>';
             const lines = [logo, '', '## Nuclei vulnerability scan', ''];
             const outcome = process.env.SCAN_OUTCOME;
             if (outcome === 'success') {
