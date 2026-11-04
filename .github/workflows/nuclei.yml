@@ -39,6 +39,7 @@ jobs:
         run: |
           set -o pipefail
           nuclei -list "$URLS_FILE" -severity low,medium,high,critical \
+            -rate-limit 5 -concurrency 1 -bulk-size 1 -probe-concurrency 1 \
             -H 'User-Agent: osinfra.io - Vulnerability Scan' \
             -jsonl-export nuclei.jsonl -sarif-export nuclei.sarif \
             2>&1 | tee "$RUNNER_TEMP/nuclei-output.txt"
