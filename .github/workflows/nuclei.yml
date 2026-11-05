@@ -153,22 +153,21 @@ jobs:
               core.warning(reportError);
             }
             const logo = '<picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/projectdiscovery/docs/main/logo/ProjectDiscovery-Mark-OnDark.svg"><img src="https://raw.githubusercontent.com/projectdiscovery/docs/main/logo/ProjectDiscovery-Mark-OnLight.svg" alt="ProjectDiscovery" height="24"></picture>';
-            const lines = [logo, '', '## 🔍 Nuclei vulnerability scan', ''];
+            const lines = [logo, '', '## Nuclei vulnerability scan', ''];
             const outcome = process.env.SCAN_OUTCOME;
             if (outcome === 'success' && !reportError) {
-              lines.push(findings.length ? `**⚠️ Scan complete: ${findings.length} findings reported.**` : '**✅ Scan complete: no findings reported.**', '');
+              lines.push(findings.length ? `**Scan complete: ${findings.length} findings reported.**` : '**Scan complete: no findings reported.**', '');
             } else {
-              const statusIcon = outcome === 'failure' ? '❌' : '⚠️';
-              lines.push(`**${statusIcon} Scan ${esc(outcome || 'not run')}. Results may be incomplete; see the job logs.**`, '');
+              lines.push(`**Scan ${esc(outcome || 'not run')}. Results may be incomplete; see the job logs.**`, '');
             }
             if (reportError) {
               lines.push(`<pre>${esc(reportError)}</pre>`, '', 'Counts below include only successfully parsed findings.', '');
             }
             lines.push('| 🔴 Critical | 🟠 High | 🟡 Medium | 🔵 Low | ℹ️ Info | ❔ Unknown |', '|---|---|---|---|---|---|',
               `| ${counts.critical} | ${counts.high} | ${counts.medium} | ${counts.low} | ${counts.info} | ${counts.unknown} |`, '');
-            lines.push(`<details><summary>🎯 Targets (${targets.length})</summary>`, '', `<pre>${esc(targets.join('\n'))}</pre>`, '', '</details>', '');
+            lines.push(`<details><summary>Targets (${targets.length})</summary>`, '', `<pre>${esc(targets.join('\n'))}</pre>`, '', '</details>', '');
             if (findings.length) {
-              lines.push('<details><summary>🔎 Findings</summary>', '', '<table>',
+              lines.push('<details><summary>Findings</summary>', '', '<table>',
                 '<tr><th>Severity</th><th>Template</th><th>Target</th></tr>');
               for (const finding of findings.slice(0, 100)) {
                 lines.push(`<tr><td>${esc(finding.info.severity)}</td><td>${esc(finding['template-id'])}</td><td>${esc(finding['matched-at'] || finding.host)}</td></tr>`);
@@ -183,7 +182,7 @@ jobs:
               ? fs.readFileSync(outputFile, 'utf8').replace(/\x1b\[[0-9;]*m/g, '')
               : '';
             if (output) {
-              lines.push('<details><summary>📋 Scan output</summary>', '', `<pre>${esc(output.slice(0, 50000))}</pre>`, '', '</details>', '');
+              lines.push('<details><summary>Scan output</summary>', '', `<pre>${esc(output.slice(0, 50000))}</pre>`, '', '</details>', '');
               if (output.length > 50000) {
                 lines.push('Output truncated; see the job logs for the full output.', '');
               }
