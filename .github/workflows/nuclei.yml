@@ -19,8 +19,8 @@ on:
         required: false
         type: number
       rate_limit:
-        default: 8
-        description: "Maximum scan requests per second; 8 uses 480 of a 500-request/minute WAF budget, so callers must account for shared traffic"
+        default: 50
+        description: "Maximum scan requests per second; 50 uses 3000 of a 5000-request/minute per-IP WAF budget, so callers must account for shared source IPs"
         required: false
         type: number
       severity:
